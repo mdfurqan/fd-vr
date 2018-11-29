@@ -1,0 +1,98 @@
+[
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/arbaaz/Arbaaz.dat",
+        "dir": "arbaaz",
+        "file": "Arbaaz.dat",
+        "id": "arbaaz-Arbaaz"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/arbaaz/friend1.dat",
+        "dir": "arbaaz",
+        "file": "friend1.dat",
+        "id": "arbaaz-friend1"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/arbaaz/friend2.dat",
+        "dir": "arbaaz",
+        "file": "friend2.dat",
+        "id": "arbaaz-friend2"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/arbaaz/friend3.dat",
+        "dir": "arbaaz",
+        "file": "friend3.dat",
+        "id": "arbaaz-friend3"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/arbaaz/test_Ar.dat",
+        "dir": "arbaaz",
+        "file": "test_Ar.dat",
+        "id": "arbaaz-test_Ar"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/furqan/Furqan.dat",
+        "dir": "furqan",
+        "file": "Furqan.dat",
+        "id": "furqan-Furqan"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/furqan/furqan2.dat",
+        "dir": "furqan",
+        "file": "furqan2.dat",
+        "id": "furqan-furqan2"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/furqan/furqan4.dat",
+        "dir": "furqan",
+        "file": "furqan4.dat",
+        "id": "furqan-furqan4"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/furqan/furqan5.dat",
+        "dir": "furqan",
+        "file": "furqan5.dat",
+        "id": "furqan-furqan5"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/furqan/furqan_3.dat",
+        "dir": "furqan",
+        "file": "furqan_3.dat",
+        "id": "furqan-furqan_3"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/misbah/Misbah.dat",
+        "dir": "misbah",
+        "file": "Misbah.dat",
+        "id": "misbah-Misbah"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/omar/Omer.dat",
+        "dir": "omar",
+        "file": "Omer.dat",
+        "id": "omar-Omer"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/sachin/sachin1.dat",
+        "dir": "sachin",
+        "file": "sachin1.dat",
+        "id": "sachin-sachin1"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/sachin/sachin2.dat",
+        "dir": "sachin",
+        "file": "sachin2.dat",
+        "id": "sachin-sachin2"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/sachin/sachin3.dat",
+        "dir": "sachin",
+        "file": "sachin3.dat",
+        "id": "sachin-sachin3"
+    },
+    {
+        "descriptorPath": "/Users/mohammed.furqan/Desktop/fun/FaceDetection/face-api.js/examples/examples-nodejs/images/salman/Salman.dat",
+        "dir": "salman",
+        "file": "Salman.dat",
+        "id": "salman-Salman"
+    }
+]

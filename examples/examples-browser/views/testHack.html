@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="face-api.js"></script>
+    <script src="js/commons.js"></script>
+    <script src="js/drawing.js"></script>
+    <script src="js/faceDetectionControls.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+</head>
+
+<body>
+    <p>Check developer console</p>
+</body>
+<script>
+let faceMatcher = null
+
+async function uploadRefImage(e) {
+    const imgFile = $('#refImgUploadInput').get(0).files[0]
+    const img = await faceapi.bufferToImage(imgFile)
+    $('#refImg').get(0).src = img.src
+    updateReferenceImageResults()
+}
+
+async function loadRefImageFromUrl(url) {
+    const img = await requestExternalImage($('#refImgUrlInput').val())
+    $('#refImg').get(0).src = img.src
+    updateReferenceImageResults()
+}
+
+async function uploadQueryImage(e) {
+    const imgFile = $('#queryImgUploadInput').get(0).files[0]
+    const img = await faceapi.bufferToImage(imgFile)
+    $('#queryImg').get(0).src = img.src
+    updateQueryImageResults()
+}
+
+async function loadQueryImageFromUrl(url) {
+    const img = await requestExternalImage($('#queryImgUrlInput').val())
+    $('#queryImg').get(0).src = img.src
+    updateQueryImageResults()
+}
+
+async function updateReferenceImageResults() {
+    const imgEl = $('#refImg').get(0)
+    const canvas = $('#refImgOverlay').get(0)
+
+    const fullFaceDescriptions = await faceapi
+        .detectAllFaces(imgEl, getFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors()
+
+    if (!fullFaceDescriptions.length) {
+        return
+    }
+
+    // create FaceMatcher with automatically assigned labels
+    // from the detection results for the reference image
+    faceMatcher = new faceapi.FaceMatcher(fullFaceDescriptions)
+
+    // resize detection and landmarks in case displayed image is smaller than
+    // original size
+    resizedResults = resizeCanvasAndResults(imgEl, canvas, fullFaceDescriptions)
+    // draw boxes with the corresponding label as text
+    const labels = faceMatcher.labeledDescriptors
+        .map(ld => ld.label)
+    const boxesWithText = resizedResults
+        .map(res => res.detection.box)
+        .map((box, i) => new faceapi.BoxWithText(box, labels[i]))
+    faceapi.drawDetection(canvas, boxesWithText)
+}
+
+async function updateQueryImageResults() {
+    if (!faceMatcher) {
+        return
+    }
+
+    const imgEl = $('#queryImg').get(0)
+    const canvas = $('#queryImgOverlay').get(0)
+
+    const results = await faceapi
+        .detectAllFaces(imgEl, getFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors()
+
+    // resize detection and landmarks in case displayed image is smaller than
+    // original size
+    resizedResults = resizeCanvasAndResults(imgEl, canvas, results)
+    // draw boxes with the corresponding label as text
+    const boxesWithText = resizedResults.map(({ detection, descriptor }) =>
+        new faceapi.BoxWithText(
+            detection.box,
+            // match each face descriptor to the reference descriptor
+            // with lowest euclidean distance and display the result as text
+            faceMatcher.findBestMatch(descriptor).toString()
+        )
+    )
+    faceapi.drawDetection(canvas, boxesWithText)
+}
+
+async function updateResults() {
+    await updateReferenceImageResults()
+    await updateQueryImageResults()
+}
+
+async function run() {
+    // load face detection, face landmark model and face recognition models
+    await changeFaceDetector(selectedFaceDetector)
+    await faceapi.loadFaceLandmarkModel('/')
+    await faceapi.loadFaceRecognitionModel('/')
+    // await loadAllImages()
+
+    // Take a user's picture and send it to backend server to identify
+    await loadQueryImage();
+
+}
+
+let faceDb = [];
+let loadedImages = 0; // Hack to check if all images are loaded and processed
+let imagesToLoad = 0;
+
+let imageEls = [];
+
+async function imageLoaded(img, filename) {
+
+    imageEls.push(img);
+
+    document.body.appendChild(img);
+
+    let canvas = document.createElement('canvas');
+    document.body.appendChild(canvas);
+
+    console.log('Detecting face in reference image...');
+    const fullFaceDescriptions = await faceapi
+        .detectAllFaces(img, getFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors()
+
+    console.log('Face detection complete!');
+    if (!fullFaceDescriptions.length) {
+        console.log('No face detected in reference  image');
+        return
+    } else {
+        console.log('Face detected in reference image', fullFaceDescriptions);
+        faceDb = faceDb.concat({
+            fd: fullFaceDescriptions, // This is the actual face descriptor
+            name: filename // temporarily to identify image
+        });
+    }
+
+
+    // create FaceMatcher with automatically assigned labels
+    // from the detection results for the reference image
+    faceMatcher = new faceapi.FaceMatcher(fullFaceDescriptions)
+
+    // resize detection and landmarks in case displayed image is smaller than
+    // original size
+    resizedResults = resizeCanvasAndResults(img, canvas, fullFaceDescriptions)
+    // draw boxes with the corresponding label as text
+    const labels = faceMatcher.labeledDescriptors
+        .map(ld => ld.label)
+    const boxesWithText = resizedResults
+        .map(res => res.detection.box)
+        .map((box, i) => new faceapi.BoxWithText(box, labels[i]))
+    faceapi.drawDetection(canvas, boxesWithText)
+
+
+    loadedImages += 1;
+
+    if (imagesToLoad === loadedImages) {
+        // Trigger reading of camera image and process it.
+        console.log('All images loaded and processed', faceDb);
+        loadQueryImage()
+    }
+
+}
+
+async function loadAllImages() {
+    const dir = '/images/friend/small/';
+    const files = ['friend1.png', 'friend2.png', 'friend3.png'];
+    // const dir = '/images/';
+    // const files = ['group1.jpg'];
+
+    imagesToLoad = files.length;
+
+    files.forEach(file => {
+        const img = new Image();
+        img.src = dir + file;
+        img.onload = imageLoaded.bind(null, img, file);
+    });
+}
+
+
+async function loadQueryImage() {
+
+    navigator.mediaDevices.getUserMedia({ video: true }).then(mediaStream => {
+        const mediaStreamTrack = mediaStream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(mediaStreamTrack);
+        console.log('Image capture', imageCapture);
+
+        imageCapture.takePhoto().then(processQueryImage).catch(error => console.error('takePhoto() error:', error));
+
+    });
+}
+
+
+// Canvas and image for temporary recognition and drawing
+let queryImageElement = new Image();
+let queryImageCanvas = document.createElement('canvas');
+queryImageCanvas.setAttribute('style', 'position: absolute; left: 0;');
+document.body.appendChild(queryImageElement);
+document.body.appendChild(queryImageCanvas);
+
+
+async function processQueryImage(blob) {
+    queryImageElement.src = URL.createObjectURL(blob);
+    console.log('Image from camera ready', queryImageElement);
+    await recognizeFaceInImage(queryImageElement);
+}
+
+async function recognizeFaceInImage(img) {
+    const results = await faceapi
+        .detectAllFaces(img, getFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptors()
+
+    if (!results.length) {
+        console.log('No image found in query image');
+        setTimeout(() => {
+                // Repeat the capture-identify-draw cycle
+                loadQueryImage();
+            }, 500);
+        return;
+    }
+
+    (async () => {
+        const rawResponse = await fetch('http://localhost:3031/identify_image', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                fd: [].slice.call(results[0].descriptor)
+                // The detection box position to be used from 'results' itself
+            })
+        });
+        const content = await rawResponse.json();
+        console.log('Response received', content);
+
+
+        // Now draw the box with the name
+        const resizedResults = resizeCanvasAndResults(img, queryImageCanvas, results)
+            const boxesWithText = resizedResults.map(({ detection, descriptor }) =>
+                new faceapi.BoxWithText(
+                    detection.box,
+                    // match each face descriptor to the reference descriptor
+                    // with lowest euclidean distance and display the result as text
+                    content._label
+                )
+            )
+
+            // console.log('BoxWithText', boxesWithText);
+            // console.log('Person identified as: ', boxesWithText[0]._text);
+
+            faceapi.drawDetection(queryImageCanvas, boxesWithText);
+
+
+            setTimeout(() => {
+                // Repeat the capture-identify-draw cycle
+                loadQueryImage();
+            }, 500);
+
+    })();
+
+
+}
+
+
+
+
+
+
+
+
+
+
+// async function recognizeFaceInImage(img) {
+
+//     document.body.appendChild(img);
+//     faceMatcher = new faceapi.FaceMatcher(faceDb.map(face => {
+//         console.log('Passing 2 params', face.name, face.fd);
+
+//         return new faceapi.LabeledFaceDescriptors(
+//                 face.name,
+//                 face.fd.map(d => d.descriptor)
+//             )
+//     }))
+
+//     const canvas = document.createElement('canvas');
+//     document.body.appendChild(canvas);
+
+//     const results = await faceapi
+//         .detectAllFaces(img, getFaceDetectorOptions())
+//         .withFaceLandmarks()
+//         .withFaceDescriptors()
+
+//     if (!results.length) {
+//         console.log('No image found in query image');
+//         return
+//     }
+
+//     // resize detection and landmarks in case displayed image is smaller than
+//     // original size
+//     resizedResults = resizeCanvasAndResults(img, canvas, results)
+
+//     const match = faceMatcher.findBestMatch(resizedResults[0].descriptor);
+
+//     const boxesWithText = resizedResults.map(({ detection, descriptor }) =>
+//         new faceapi.BoxWithText(
+//             detection.box,
+//             // match each face descriptor to the reference descriptor
+//             // with lowest euclidean distance and display the result as text
+//             match.toString()
+//         )
+//     )
+
+//     // console.log('BoxWithText', boxesWithText);
+//     // console.log('Person identified as: ', boxesWithText[0]._text);
+
+//     console.log('Match', match);
+
+//     faceapi.drawDetection(canvas, boxesWithText)
+
+// }
+
+
+$(document).ready(function() {
+    run()
+})
+</script>
+</body>
+
+</html>
